@@ -1,0 +1,8 @@
+{
+    "editor.fontLigatures": true,
+    "editor.fontFamily": "'Fira Code iScript', Consolas, 'Courier New', monospace",
+    "files.exclude": {
+        "bin": true,
+        "obj": true
+    }
+}
