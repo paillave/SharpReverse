@@ -15,7 +15,7 @@ namespace Paillave.SharpReverse
             var outputPath = args.Length > 1 ? args[1] : Path.ChangeExtension(inputAssemblyPath, "yuml");
             using (var sw = new StreamWriter(outputPath))
                 reverseModel.WriteYuml(sw);
-            Console.WriteLine("model writen");
+            Console.WriteLine("model written");
         }
     }
 }
