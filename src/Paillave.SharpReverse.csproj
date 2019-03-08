@@ -6,7 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.2" />
   </ItemGroup>
-
+  <!-- <ItemGroup>
+    <Content Include="Paillave.SharpReverse.props" />
+    <Content Include="Paillave.SharpReverse.targets" />
+  </ItemGroup> -->
 </Project>
