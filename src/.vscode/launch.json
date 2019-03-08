@@ -10,7 +10,10 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/bin/Debug/netcoreapp2.2/Paillave.SharpReverse.dll",
-            "args": ["C:\\Users\\sroyer\\Source\\Repos\\iNavExternalData-Backend\\src\\Kpmg.InavExternalData.DataAccess\\bin\\Debug\\netcoreapp2.2\\Kpmg.InavExternalData.DataAccess.dll"],
+            "args": [
+                "C:\\Users\\paill\\source\\repos\\PMS\\src\\FundProcess.Pms.DataAccess\\bin\\Debug\\netcoreapp2.2\\FundProcess.Pms.DataAccess.dll"
+            ],
+            // "args": ["C:\\Users\\sroyer\\Source\\Repos\\iNavExternalData-Backend\\src\\Kpmg.InavExternalData.DataAccess\\bin\\Debug\\netcoreapp2.2\\Kpmg.InavExternalData.DataAccess.dll"],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopAtEntry": false,

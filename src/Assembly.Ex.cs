@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Paillave.SharpReverse
@@ -32,15 +33,18 @@ namespace Paillave.SharpReverse
             }
         }
         static Type entityTypeConfigurationType = typeof(IEntityTypeConfiguration<>);
+        static Type queryTypeConfigurationType = typeof(IQueryTypeConfiguration<>);
         static Type enumerableType = typeof(IEnumerable<>);
         static Type migrationType = typeof(Migration);
+        static Type migrationsSqlGeneratorType = typeof(IMigrationsSqlGenerator);
+        static Type migrationOperationType = typeof(MigrationOperation);
         static Type modelSnapshotType = typeof(ModelSnapshot);
         static Type dbContextType = typeof(DbContext);
         static Type valueConverterType = typeof(ValueConverter);
         static Type designTimeDbContextFactoryType = typeof(IDesignTimeDbContextFactory<>);
         public static bool IsConfiguration(this Type type)
             => type.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == entityTypeConfigurationType)
+                .Where(i => i.IsGenericType && (i.GetGenericTypeDefinition() == entityTypeConfigurationType || i.GetGenericTypeDefinition() == queryTypeConfigurationType))
                 .Any();
         public static bool IsDbContextFactory(this Type type)
             => type.GetInterfaces()
@@ -48,6 +52,10 @@ namespace Paillave.SharpReverse
                 .Any();
         public static bool IsValueConverter(this Type type)
             => valueConverterType.IsAssignableFrom(type);
+        public static bool IsMigrationsSqlGenerator(this Type type)
+            => migrationsSqlGeneratorType.IsAssignableFrom(type);
+        public static bool IsMigrationOperation(this Type type)
+            => migrationOperationType.IsAssignableFrom(type);
         public static bool IsDbContext(this Type type)
             => dbContextType.IsAssignableFrom(type);
         public static bool IsMigration(this Type type)

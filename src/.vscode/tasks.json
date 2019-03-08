@@ -9,7 +9,11 @@
                 "build",
                 "${workspaceFolder}/Paillave.SharpReverse.csproj"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

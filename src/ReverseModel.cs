@@ -51,7 +51,10 @@ namespace Paillave.SharpReverse
             foreach (var r in ClassModels.Where(cm => cm.Relationships != null).SelectMany(cm => cm.Relationships.Select(r => new { ClassModel = cm, RelationShip = r })))
             {
                 var relationShipName = (r.RelationShip.Name != r.RelationShip.Target) ? r.RelationShip.Name : null;
-                sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}->[{labelDico[r.RelationShip.Target]}]");
+                if (r.RelationShip.Target.EndsWith('?'))
+                    sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}-0..1>[{labelDico[r.RelationShip.Target.Substring(0, r.RelationShip.Target.Length - 1)]}]");
+                else
+                    sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}->[{labelDico[r.RelationShip.Target]}]");
             }
             foreach (var r in ClassModels.Where(cm => cm.Aggregations != null).SelectMany(cm => cm.Aggregations.Select(r => new { ClassModel = cm, RelationShip = r })))
             {
@@ -73,18 +76,24 @@ namespace Paillave.SharpReverse
                 .Where(i => !i.IsDbContextFactory())
                 .Where(i => !i.IsMigration())
                 .Where(i => !i.IsModelSnapshot())
+                .Where(i => !i.IsMigrationOperation())
+                .Where(i => !i.IsMigrationsSqlGenerator())
+                .Where(i => !i.IsInterface)
                 .ToList();
-            var typesNamesHashSet = new HashSet<string>(types.Select(i => i.Name));
-            var members = xmlDocumentation.Descendants().Elements("member");
-            var comments = members
-                .Where(i => i.Attribute("name").Value.StartsWith("T:"))
-                .Select(i => new
-                {
-                    TypeName = i.Attribute("name").Value.Split('.').LastOrDefault(),
-                    Comment = i.Element("summary").Value
-                })
-                .ToDictionary(i => i.TypeName, i => i.Comment);
-
+            var typesNamesHashSet = new HashSet<string>(types.Select(i => i.Name).Union(types.Select(i => $"{i.Name}?")));
+            Dictionary<string, string> comments = new Dictionary<string, string>();
+            if (xmlDocumentation != null)
+            {
+                var members = xmlDocumentation.Descendants().Elements("member");
+                comments = members
+                   .Where(i => i.Attribute("name").Value.StartsWith("T:"))
+                   .Select(i => new
+                   {
+                       TypeName = i.Attribute("name").Value.Split('.').LastOrDefault(),
+                       Comment = i.Element("summary").Value
+                   })
+                   .ToDictionary(i => i.TypeName, i => i.Comment);
+            }
             foreach (var type in types)
             {
                 ClassModel classModel = new ClassModel { Name = type.Name };
@@ -100,9 +109,9 @@ namespace Paillave.SharpReverse
                     classModel.SubClass = types.FirstOrDefault(i => type.IsSubclassOf(i))?.Name;
                     classModel.Type = type.IsAbstract ? ClassModelType.AbstractClass : ClassModelType.Class;
                     var properties = type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public);
-                    classModel.Members = properties.Where(i => !typesNamesHashSet.Contains(i.PropertyType.Name) && (i.PropertyType == typeof(string) || !i.PropertyType.IsEnumerable())).Select(i => new ClassModelMember { Name = i.Name, Type = GetTypeLabel(i.PropertyType) }).ToList();
-                    classModel.Relationships = properties.Where(i => typesNamesHashSet.Contains(i.PropertyType.Name)).Select(i => new ClassModelRelationShip { Name = i.Name, Target = i.PropertyType.Name }).ToList();
-                    classModel.Aggregations = properties.Where(i => !typesNamesHashSet.Contains(i.PropertyType.Name) && i.PropertyType != typeof(string) && i.PropertyType.IsEnumerable()).Select(i => new ClassModelRelationShip { Name = i.Name, Target = i.PropertyType.GetEnumeratedType().Name }).ToList();
+                    classModel.Members = properties.Where(i => !typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)) && (i.PropertyType == typeof(string) || !i.PropertyType.IsEnumerable())).Select(i => new ClassModelMember { Name = i.Name, Type = GetTypeLabel(i.PropertyType) }).ToList();
+                    classModel.Relationships = properties.Where(i => typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType))).Select(i => new ClassModelRelationShip { Name = i.Name, Target = GetTypeLabel(i.PropertyType) }).ToList();
+                    classModel.Aggregations = properties.Where(i => !typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)) && i.PropertyType != typeof(string) && i.PropertyType.IsEnumerable()).Select(i => new ClassModelRelationShip { Name = i.Name, Target = i.PropertyType.GetEnumeratedType().Name }).ToList();
                 }
                 ClassModels.Add(classModel);
             }
