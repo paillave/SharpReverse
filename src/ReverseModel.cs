@@ -24,7 +24,7 @@ namespace Paillave.SharpReverse
         {
             switch (classModelType)
             {
-                case ClassModelType.AbstractClass: return "-abstact- ";
+                case ClassModelType.AbstractClass: return "-abstract- ";
                 case ClassModelType.Enumeration: return "-enum- ";
                 default: return null;
             }
