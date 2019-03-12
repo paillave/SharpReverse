@@ -109,9 +109,20 @@ namespace Paillave.SharpReverse
                     classModel.SubClass = types.FirstOrDefault(i => type.IsSubclassOf(i))?.Name;
                     classModel.Type = type.IsAbstract ? ClassModelType.AbstractClass : ClassModelType.Class;
                     var properties = type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public);
-                    classModel.Members = properties.Where(i => !typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)) && (i.PropertyType == typeof(string) || !i.PropertyType.IsEnumerable())).Select(i => new ClassModelMember { Name = i.Name, Type = GetTypeLabel(i.PropertyType) }).ToList();
-                    classModel.Relationships = properties.Where(i => typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType))).Select(i => new ClassModelRelationShip { Name = i.Name, Target = GetTypeLabel(i.PropertyType) }).ToList();
-                    classModel.Aggregations = properties.Where(i => !typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)) && i.PropertyType != typeof(string) && i.PropertyType.IsEnumerable()).Select(i => new ClassModelRelationShip { Name = i.Name, Target = i.PropertyType.GetEnumeratedType().Name }).ToList();
+                    classModel.Relationships = properties
+                        .Where(i => typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)))
+                        .Select(i => new ClassModelRelationShip { Name = i.Name, Target = GetTypeLabel(i.PropertyType) })
+                        .ToList();
+                    classModel.Members = properties
+                        .Where(i => i.Name != "Id")
+                        .Where(i => !classModel.Relationships.Any(r => $"{r.Name}Id" == i.Name))
+                        .Where(i => !typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)) && (i.PropertyType == typeof(string) || !i.PropertyType.IsEnumerable()))
+                        .Select(i => new ClassModelMember { Name = i.Name, Type = GetTypeLabel(i.PropertyType) })
+                        .ToList();
+                    classModel.Aggregations = properties
+                        .Where(i => !typesNamesHashSet.Contains(GetTypeLabel(i.PropertyType)) && i.PropertyType != typeof(string) && i.PropertyType.IsEnumerable())
+                        .Select(i => new ClassModelRelationShip { Name = i.Name, Target = i.PropertyType.GetEnumeratedType().Name })
+                        .ToList();
                 }
                 ClassModels.Add(classModel);
             }
