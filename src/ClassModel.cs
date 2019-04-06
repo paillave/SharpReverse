@@ -7,7 +7,6 @@ namespace Paillave.SharpReverse
         public string SubClass { get; set; }
         public string Documentation { get; set; }
         public string Name { get; set; }
-        public string InheritsFrom { get; set; }
         public ClassModelType Type { get; set; }
         public List<ClassModelMember> Members { get; set; }
         public List<ClassModelRelationShip> Relationships { get; set; }

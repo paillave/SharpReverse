@@ -9,9 +9,9 @@ namespace Paillave.SharpReverse
 {
     public class ReverseModel
     {
-        public List<ClassModel> ClassModels { get; } = new List<ClassModel>();
-        public ReverseModel(string assemblyPath)
-            : this(Assembly.LoadFrom(assemblyPath), GetXmlDocumentation(assemblyPath))
+        public List<ClassModel> ClassModels { get; private set; } = new List<ClassModel>();
+        public ReverseModel(string assemblyPath, string rootClassName, bool noOrphans)
+            : this(Assembly.LoadFrom(assemblyPath), GetXmlDocumentation(assemblyPath), rootClassName, noOrphans)
         {
         }
         private static XDocument GetXmlDocumentation(string assemblyPath)
@@ -52,18 +52,25 @@ namespace Paillave.SharpReverse
             {
                 var relationShipName = (r.RelationShip.Name != r.RelationShip.Target) ? r.RelationShip.Name : null;
                 if (r.RelationShip.Target.EndsWith('?'))
-                    sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}-0..1>[{labelDico[r.RelationShip.Target.Substring(0, r.RelationShip.Target.Length - 1)]}]");
+                {
+                    if (labelDico.TryGetValue(r.RelationShip.Target.Substring(0, r.RelationShip.Target.Length - 1), out var val))
+                        sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}-0..1>[{val}]");
+                }
                 else
-                    sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}->[{labelDico[r.RelationShip.Target]}]");
+                {
+                    if (labelDico.TryGetValue(r.RelationShip.Target, out var val))
+                        sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]{relationShipName}->[{val}]");
+                }
             }
             foreach (var r in ClassModels.Where(cm => cm.Aggregations != null).SelectMany(cm => cm.Aggregations.Select(r => new { ClassModel = cm, RelationShip = r })))
             {
                 var relationShipName = (r.RelationShip.Name != $"{r.RelationShip.Target}s") ? r.RelationShip.Name : null;
-                sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]<>{relationShipName}->[{labelDico[r.RelationShip.Target]}]");
+                if (labelDico.TryGetValue(r.RelationShip.Target, out var val))
+                    sw.WriteLine($"[{labelDico[r.ClassModel.Name]}]<>{relationShipName}->[{val}]");
             }
         }
 
-        public ReverseModel(Assembly assembly, XDocument xmlDocumentation)
+        public ReverseModel(Assembly assembly, XDocument xmlDocumentation, string rootClassName, bool noOrphans)
         {
             var types = assembly
                 .GetLoadableTypes()
@@ -80,6 +87,12 @@ namespace Paillave.SharpReverse
                 .Where(i => !i.IsMigrationsSqlGenerator())
                 .Where(i => !i.IsInterface)
                 .ToList();
+            if (!string.IsNullOrWhiteSpace(rootClassName))
+            {
+                var rootType = types.Single(i => i.Name.Equals(rootClassName));
+                types = types.Where(i => rootType.IsAssignableFrom(i)).ToList();
+            }
+
             var typesNamesHashSet = new HashSet<string>(types.Select(i => i.Name).Union(types.Select(i => $"{i.Name}?")));
             Dictionary<string, string> comments = new Dictionary<string, string>();
             if (xmlDocumentation != null)
@@ -125,6 +138,14 @@ namespace Paillave.SharpReverse
                         .ToList();
                 }
                 ClassModels.Add(classModel);
+            }
+            if (noOrphans)
+            {
+                ClassModels = ClassModels.Where(cm =>
+                {
+                    var links = ((cm.Aggregations?.Count) ?? 0) + ((cm.Relationships?.Count) ?? 0) + ClassModels.Count(i => i.SubClass == cm.Name) + (string.IsNullOrWhiteSpace(cm.SubClass) ? 0 : 1);
+                    return links > 0;
+                }).ToList();
             }
         }
         private static string GetTypeLabel(Type type)
