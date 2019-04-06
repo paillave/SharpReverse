@@ -119,7 +119,8 @@ namespace Paillave.SharpReverse
                 }
                 else
                 {
-                    classModel.SubClass = types.FirstOrDefault(i => type.IsSubclassOf(i))?.Name;
+                    if (type.BaseType != typeof(object))
+                        classModel.SubClass = type.BaseType.Name;// types.FirstOrDefault(i => type.IsSubclassOf(i))?.Name;
                     classModel.Type = type.IsAbstract ? ClassModelType.AbstractClass : ClassModelType.Class;
                     var properties = type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public);
                     classModel.Relationships = properties
