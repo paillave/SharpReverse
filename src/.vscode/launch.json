@@ -10,22 +10,22 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/bin/Debug/netcoreapp2.2/Paillave.SharpReverse.dll",
-            "args": [
-                "-i",
-                "C:\\Users\\paill\\source\\repos\\PMS\\src\\FundProcess.Pms.DataAccess\\bin\\Debug\\netcoreapp2.2\\FundProcess.Pms.DataAccess.dll",
-                "-o",
-                "C:\\Users\\paill\\source\\repos\\PMS\\docs\\FundProcess.Pms.DataAccess.yuml",
-                "-no"
-            ],
             // "args": [
             //     "-i",
             //     "C:\\Users\\paill\\source\\repos\\PMS\\src\\FundProcess.Pms.DataAccess\\bin\\Debug\\netcoreapp2.2\\FundProcess.Pms.DataAccess.dll",
             //     "-o",
-            //     "C:\\Users\\paill\\source\\repos\\PMS\\docs\\FundProcess.Pms.DataAccess.Securities.yuml",
-            //     "-r",
-            //     "Security",
+            //     "C:\\Users\\paill\\source\\repos\\PMS\\docs\\FundProcess.Pms.DataAccess.yuml",
             //     "-no"
             // ],
+            "args": [
+                "-i",
+                "C:\\Users\\paill\\source\\repos\\PMS\\src\\FundProcess.Pms.DataAccess\\bin\\Debug\\netcoreapp2.2\\FundProcess.Pms.DataAccess.dll",
+                "-o",
+                "C:\\Users\\paill\\source\\repos\\PMS\\docs\\FundProcess.Pms.DataAccess.Entities.yuml",
+                "-r",
+                "EntityBase",
+                "-no"
+            ],
             // "args": ["C:\\Users\\sroyer\\Source\\Repos\\iNavExternalData-Backend\\src\\Kpmg.InavExternalData.DataAccess\\bin\\Debug\\netcoreapp2.2\\Kpmg.InavExternalData.DataAccess.dll"],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",

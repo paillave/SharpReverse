@@ -145,6 +145,8 @@ namespace Paillave.SharpReverse
                 ClassModels = ClassModels.Where(cm =>
                 {
                     var links = ((cm.Aggregations?.Count) ?? 0) + ((cm.Relationships?.Count) ?? 0) + ClassModels.Count(i => i.SubClass == cm.Name) + (string.IsNullOrWhiteSpace(cm.SubClass) ? 0 : 1);
+                    links += ClassModels.SelectMany(i => i.Relationships ?? new List<ClassModelRelationShip>()).Count(i => i.Target == cm.Name);
+                    links += ClassModels.SelectMany(i => i.Aggregations ?? new List<ClassModelRelationShip>()).Count(i => i.Target == cm.Name);
                     return links > 0;
                 }).ToList();
             }
