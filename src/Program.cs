@@ -18,7 +18,7 @@ namespace Paillave.SharpReverse
             commandLineApplication.ShowInHelpText = true;
             var inputAssemblyPathOption = commandLineApplication.Option("-i | --input-assembly-path <inputAssemblyPath>", "Assembly path to inspect", CommandOptionType.SingleValue);
             var outputPathOption = commandLineApplication.Option("-o | --output-path <outputPath>", "Path of the output yuml file", CommandOptionType.SingleValue);
-            var rootClassNameOption = commandLineApplication.Option("-r | --root-class-name <rootClassName>", "Keep only classes that are assignable to this type", CommandOptionType.SingleValue);
+            var rootClassNameOption = commandLineApplication.Option("-r | --root-class-name <rootClassName>", "Keep only classes that are assignable to this type", CommandOptionType.MultipleValue);
             var noOrphansOption = commandLineApplication.Option("-no | --no-orphans", "Exclude entities that are not linked to any other entity", CommandOptionType.NoValue);
             commandLineApplication.HelpOption("-? | -h | --help");
             commandLineApplication.OnExecute(() =>
@@ -30,17 +30,17 @@ namespace Paillave.SharpReverse
                         args,
                         inputAssemblyPathOption.Value(),
                         outputPathOption.HasValue() ? outputPathOption.Value() : (string)null,
-                        rootClassNameOption.HasValue() ? rootClassNameOption.Value() : (string)null,
-                        noOrphansOption.HasValue()
+                        noOrphansOption.HasValue(),
+                        rootClassNameOption.Values.ToArray()
                     );
                 return 0;
             });
             commandLineApplication.Execute(args);
         }
-        private static void ExecuteApp(string[] args, string inputAssemblyPath, string outputPath, string rootClassName, bool noOrphans)
+        private static void ExecuteApp(string[] args, string inputAssemblyPath, string outputPath, bool noOrphans, params string[] rootClassName)
         {
             // var inputAssemblyPath = args[0];
-            var reverseModel = new ReverseModel(inputAssemblyPath, rootClassName, noOrphans);
+            var reverseModel = new ReverseModel(inputAssemblyPath, noOrphans, rootClassName);
             outputPath = outputPath ?? Path.ChangeExtension(inputAssemblyPath, "yuml");
             using (var sw = new StreamWriter(outputPath))
                 reverseModel.WriteYuml(sw);

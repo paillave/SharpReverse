@@ -13,7 +13,7 @@ namespace src
         {
             try
             {
-                var reverseModel = new ReverseModel(this.AssemblyPath, null, false);
+                var reverseModel = new ReverseModel(this.AssemblyPath, false, null);
                 var outputPath = System.IO.Path.ChangeExtension(this.AssemblyPath, "yuml");
                 using (var sw = new System.IO.StreamWriter(outputPath))
                     reverseModel.WriteYuml(sw);

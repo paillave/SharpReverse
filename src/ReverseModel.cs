@@ -10,8 +10,8 @@ namespace Paillave.SharpReverse
     public class ReverseModel
     {
         public List<ClassModel> ClassModels { get; private set; } = new List<ClassModel>();
-        public ReverseModel(string assemblyPath, string rootClassName, bool noOrphans)
-            : this(Assembly.LoadFrom(assemblyPath), GetXmlDocumentation(assemblyPath), rootClassName, noOrphans)
+        public ReverseModel(string assemblyPath, bool noOrphans, params string[] rootClassName)
+            : this(Assembly.LoadFrom(assemblyPath), GetXmlDocumentation(assemblyPath), noOrphans, rootClassName)
         {
         }
         private static XDocument GetXmlDocumentation(string assemblyPath)
@@ -70,7 +70,7 @@ namespace Paillave.SharpReverse
             }
         }
 
-        public ReverseModel(Assembly assembly, XDocument xmlDocumentation, string rootClassName, bool noOrphans)
+        public ReverseModel(Assembly assembly, XDocument xmlDocumentation, bool noOrphans, params string[] rootClassNames)
         {
             var types = assembly
                 .GetLoadableTypes()
@@ -87,10 +87,10 @@ namespace Paillave.SharpReverse
                 .Where(i => !i.IsMigrationsSqlGenerator())
                 .Where(i => !i.IsInterface)
                 .ToList();
-            if (!string.IsNullOrWhiteSpace(rootClassName))
+            if (rootClassNames != null && rootClassNames.Count() != 0)
             {
-                var rootType = types.Single(i => i.Name.Equals(rootClassName));
-                types = types.Where(i => rootType.IsAssignableFrom(i)).ToList();
+                var rootTypes = types.Join(rootClassNames, i => i.Name, i => i, (l, r) => l).ToList();
+                types = types.Where(i => rootTypes.Any(rt => rt.IsAssignableFrom(i))).ToList();
             }
 
             var typesNamesHashSet = new HashSet<string>(types.Select(i => i.Name).Union(types.Select(i => $"{i.Name}?")));
